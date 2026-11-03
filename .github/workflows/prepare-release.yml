@@ -1,0 +1,28 @@
+name: Prepare VoxPro release draft
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/prepare-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create draft release v1.0.0 if absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view v1.0.0 --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Existing release v1.0.0 found; leaving unchanged."
+          else
+            gh release create v1.0.0 --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "VoxPro 1.8.5 — System 7.6.1 Native Preservation Baseline" --notes-file RELEASE_NOTES.md --draft
+            echo "Draft created. Add both verified .sit binaries before publishing."
+          fi
